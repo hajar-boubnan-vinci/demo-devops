@@ -6,14 +6,14 @@
 
 footer,
 header {
-  background-color: rgb(185, 24, 164);
+  background-color: rgb(126, 24, 185);
   color: white;
   padding-bottom: 20px;
   text-align: center;
 }
 
 header nav {
-  background-color: rgb(185, 24, 164);
+  background-color: rgb(126, 24, 185);
   padding: 5px;
   text-align: left;
 }
