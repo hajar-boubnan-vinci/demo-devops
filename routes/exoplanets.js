@@ -57,10 +57,7 @@ router.get('/search', function (req, res, next) {
     const uniqueNameExoplanetParam = req.query.uniqueNameExoplanet;
     let min3charOK = false;
     let exoplanetsTable = null;
-    if (uniqueNameExoplanetParam.length >= 3) {
-        min3charOK = true;
-        exoplanetsTable = Exoplanet.search(uniqueNameExoplanetParam);
-    }
+    ({ min3charOK, exoplanetsTable } = functionMin3Caractere(uniqueNameExoplanetParam, min3charOK, exoplanetsTable));
     res.render('exoplanets/index.hbs', { exoplanetsTable, min3charOK });
 });
 
@@ -87,15 +84,8 @@ router.get('/details', function (req, res, next) {
 router.get('/filter', function (req, res, next) {
     const filter = req.query.filter;
     let exoplanetsTableFilter = [];
-    if (filter === "Filtrer par hclass") {
-        console.log("GET FILTER EXOPLANET HCLASS");
-        exoplanetsTableFilter = Exoplanet.searchByHclass(req.query.hClassExoplanet);
-    }
-    if (filter === "Filtrer par année") {
-        console.log("GET FILTER EXOPLANET ANNEE");
-        const discoveryYearParam = parseInt(req.query.discoveryYearExoplanet);
-        exoplanetsTableFilter = Exoplanet.searchByYear(discoveryYearParam);
-    }
+    exoplanetsTableFilter = functionFiltreHClass(filter, exoplanetsTableFilter, req);
+    exoplanetsTableFilter = functionFiltreAnnee(filter, req, exoplanetsTableFilter);
     // param exoplanetsTable must be the same but with a different value (table filtering)
     res.render('exoplanets/index.hbs', { exoplanetsTable: exoplanetsTableFilter });
 });
@@ -113,6 +103,22 @@ router.get('/update', function (req, res, next) {
 /* POST update exoplanet. */
 router.post('/update', function (req, res, next) {
     console.log("POST UPDATE EXOPLANET");
+    FuctionUpdate(req);
+    res.redirect('/exoplanets');
+});
+
+
+module.exports = router;
+
+function functionMin3Caractere(uniqueNameExoplanetParam, min3charOK, exoplanetsTable) {
+    if (uniqueNameExoplanetParam.length >= 3) {
+        min3charOK = true;
+        exoplanetsTable = Exoplanet.search(uniqueNameExoplanetParam);
+    }
+    return { min3charOK, exoplanetsTable };
+}
+
+function FuctionUpdate(req) {
     Exoplanet.save({
         id: parseInt(req.body.idExoplanet),
         uniqueName: req.body.uniqueNameExoplanet,
@@ -121,9 +127,22 @@ router.post('/update', function (req, res, next) {
         IST: parseFloat(req.body.ISTExoplanet),
         pClass: req.body.pClassExoplanet
     });
+}
 
-    res.redirect('/exoplanets');
-});
+function functionFiltreAnnee(filter, req, exoplanetsTableFilter) {
+    if (filter === "Filtrer par année") {
+        console.log("GET FILTER EXOPLANET ANNEE");
+        const discoveryYearParam = parseInt(req.query.discoveryYearExoplanet);
+        exoplanetsTableFilter = Exoplanet.searchByYear(discoveryYearParam);
+    }
+    return exoplanetsTableFilter;
+}
 
+function functionFiltreHClass(filter, exoplanetsTableFilter, req) {
+    if (filter === "Filtrer par hclass") {
+        console.log("GET FILTER EXOPLANET HCLASS");
+        exoplanetsTableFilter = Exoplanet.searchByHclass(req.query.hClassExoplanet);
+    }
+    return exoplanetsTableFilter;
+}
 
-module.exports = router;
